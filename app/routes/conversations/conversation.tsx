@@ -4,35 +4,31 @@ import {
     useCallFrame,
     useDailyEvent
 } from "@daily-co/daily-react";
-import {useRef} from "react";
+import {
+    useCallback,
+    useEffect,
+    useRef
+} from "react";
 import {
     Link,
     useNavigate,
 } from "react-router";
-import {Button} from "~/components/ui/button";
 import {ArrowLeft} from "lucide-react";
+import {getConversation} from "~/lib/tavus-api";
 
 export async function loader({params}: Route.LoaderArgs) {
     const conversation_id = params.id;
-    const url = `https://tavusapi.com/v2/conversations/${conversation_id}`;
-
-    const response = await fetch(url, {
-        method: "GET",
-        headers: {
-            "x-api-key": import.meta.env.VITE_TAVUS_API_KEY,
-        }
-    });
-
-    const {conversation_url} = await response.json();
-
-    return conversation_url;
+    
+    return await getConversation(conversation_id);
 }
 
 export default function Conversation({loaderData}: Route.ComponentProps) {
     const navigate = useNavigate();
 
     const callRef = useRef(null);
+
     const callFrame = useCallFrame({
+        // @ts-ignore
         parentElRef: callRef,
         options: {
             url: loaderData,
@@ -52,9 +48,9 @@ export default function Conversation({loaderData}: Route.ComponentProps) {
 
     useDailyEvent(
         "left-meeting",
-        () => {
+        useCallback(() => {
             navigate("/");
-        }
+        }, [])
     )
 
     callFrame?.join();

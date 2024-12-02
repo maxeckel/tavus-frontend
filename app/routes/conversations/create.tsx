@@ -1,4 +1,3 @@
-import type {Route} from "./+types/home";
 import {LanguageSelect} from "~/components/language-select";
 import {PersonaSelect} from "~/components/persona-select";
 import {useFetcher} from "react-router";
@@ -7,6 +6,9 @@ import {Button} from "~/components/ui/button";
 import {Label} from "~/components/ui/label";
 import {Textarea} from "~/components/ui/textarea";
 import {Input} from "~/components/ui/input";
+import {Persona} from "~/types/persona";
+import {getAllPersonas} from "~/lib/tavus-api";
+import {Route} from "../../../.react-router/types/app/routes/conversations/+types/create";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -15,26 +17,20 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export async function loader() {
-    const url = "https://tavusapi.com/v2/personas?persona_type=user&limit=20"
-    const response = await fetch(url, {
-        method: "GET",
-        headers: {
-            "x-api-key": import.meta.env.VITE_TAVUS_API_KEY,
-        }
-    });
-
-    const {data: personas} = await response.json();
-
-    return personas;
+    return await getAllPersonas();
 }
 
-export default function Home({loaderData}: Route.ComponentProps) {
+export default function Create({loaderData}: Route.ComponentProps) {
     const fetcher = useFetcher();
     const errors = fetcher.data?.errors;
-    const [selectedPersona, setSelectedPersona] = useState(null);
+    const [selectedPersona, setSelectedPersona] = useState<Persona|null>(null);
 
-    const changePersona = (persona_id) => {
+    const changePersona = (persona_id : string) => {
         const persona = loaderData.find(persona => persona.persona_id === persona_id);
+        
+        if (! persona) {
+            throw `Persona with id ${persona_id} not found`;
+        }
 
         setSelectedPersona(persona);
     }
@@ -48,38 +44,38 @@ export default function Home({loaderData}: Route.ComponentProps) {
             <main className="flex flex-col gap-8 p-4">
                 <div className="flex justify-center">
                     <fetcher.Form method={"POST"} action="/conversations" className="grid grid-cols-2 gap-8 w-1/2">
-                        <div className="col-span-full flex flex-col gap-2 items-start justify-center">
+                        <div className="col-span-full flex flex-col gap-2 items-start justify-start">
                             <Label htmlFor="conversation_name" className="text-md">Conversation Name:</Label>
-                            <Input name="conversation_name" required/>
+                            <Input id="conversation_name" name="conversation_name" required/>
                             {errors?.conversation_name ? errors.conversation_name._errors.map((error: string, index: number) => (
                                 <p className="col-span-full text-red-600" key={`name_error_${index}`}>{error}</p>
                             )) : null}
                         </div>
 
-                        <div className="flex flex-col gap-2 items-start justify-center">
+                        <div className="flex flex-col gap-2 items-start justify-start">
                             <Label htmlFor="language" className="text-md">Language:</Label>
-                            <LanguageSelect name="language"/>
+                            <LanguageSelect id="language" name="language"/>
                             {errors?.language ? errors.language._errors.map((error: string, index: number) => (
                                 <p className="col-span-full text-red-600" key={`name_error_${index}`}>{error}</p>
                             )) : null}
                         </div>
 
-                        <div className="flex flex-col gap-2 items-start justify-center">
+                        <div className="flex flex-col gap-2 items-start justify-start">
                             <Label htmlFor="persona" className="text-md">Persona:</Label>
-                            <PersonaSelect name="persona" personas={loaderData} onValueChange={changePersona}/>
+                            <PersonaSelect id="persona" name="persona" personas={loaderData} onValueChange={changePersona}/>
                             {errors?.persona_id ? errors.persona_id._errors.map((error: string, index: number) => (
                                 <p className="col-span-full text-red-600" key={`name_error_${index}`}>{error}</p>
                             )) : null}
                         </div>
 
-                        <div className="col-span-full flex flex-col gap-2 items-start justify-center">
+                        <div className="col-span-full flex flex-col gap-2 items-start justify-start">
                             <Label htmlFor="greeting" className="text-md">Greeting:</Label>
-                            <Textarea name="greeting"/>
+                            <Textarea id="greeting" name="greeting"/>
                         </div>
 
-                        <div className="col-span-full flex flex-col gap-2 items-start justify-center">
+                        <div className="col-span-full flex flex-col gap-2 items-start justify-start">
                             <Label htmlFor="context" className="text-md">Context:</Label>
-                            <Textarea name="context"/>
+                            <Textarea id="context" name="context"/>
                         </div>
 
                         <input type="hidden" name="persona_id" value={selectedPersona?.persona_id}/>
@@ -87,8 +83,7 @@ export default function Home({loaderData}: Route.ComponentProps) {
 
                         {fetcher.state === "idle"
                             ? <Button type="submit" className="col-span-full" size="lg">Create Conversation</Button>
-                            :
-                            <Button type="button" className="col-span-full" size="lg" disabled>Creating Conversation...
+                            : <Button type="button" className="col-span-full" size="lg" disabled>Creating Conversation...
                                 Please wait.</Button>
                         }
                     </fetcher.Form>

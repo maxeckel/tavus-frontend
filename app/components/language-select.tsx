@@ -1,5 +1,4 @@
 import { SelectProps } from "@radix-ui/react-select";
-import { JSX } from "react/jsx-runtime";
 import {
     Select,
     SelectContent,
@@ -8,7 +7,7 @@ import {
     SelectValue
 } from "~/components/ui/select";
 
-export function LanguageSelect(props: JSX.IntrinsicAttributes & SelectProps) {
+export function LanguageSelect(props: SelectProps & {id: string, name: string}) {
     return (
         <Select {...props}>
             <SelectTrigger className="w-full">

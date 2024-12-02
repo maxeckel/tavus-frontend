@@ -8,7 +8,7 @@ import {
     SelectValue
 } from "~/components/ui/select";
 
-export function PersonaSelect({personas, ...rest}: {personas: any[]} & SelectProps) {
+export function PersonaSelect({personas, ...rest}: {personas: any[], id: string, name: string} & SelectProps) {
     return (
         <Select {...rest}>
             <SelectTrigger className="w-full">
