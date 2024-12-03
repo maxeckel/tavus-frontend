@@ -37,7 +37,7 @@ export default function Create({loaderData}: Route.ComponentProps) {
 
     return (
         <>
-            <header className="border-b border-gray-200 h-16 flex items-center px-4">
+            <header className="border-b border-gray-200 h-16 flex items-center px-4 mb-8">
                 <h1 className="text-2xl">Create Conversation</h1>
             </header>
 
